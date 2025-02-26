@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>胡广生服务导航</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: url('https://images.unsplash.com/photo-1464802686167-b939a6910659?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial', sans-serif;
+    }
+    .grid-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      background: repeating-linear-gradient(45deg, rgba(0, 255, 255, 0.05) 0px, rgba(0, 255, 255, 0.05) 2px, transparent 2px, transparent 40px);
+      animation: gridMove 20s infinite linear;
+      perspective: 1000px;
+    }
+    @keyframes gridMove {
+      0% { transform: translateZ(-500px) rotateX(20deg); }
+      100% { transform: translateZ(500px) rotateX(20deg); }
+    }
+    .energy-field {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .beam {
+      position: absolute;
+      width: 2px;
+      height: 200px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(0, 255, 255, 0.9), rgba(255, 215, 0, 0));
+      animation: orbit 3s infinite ease-in-out;
+      transform-origin: center;
+    }
+    .beam:nth-child(1) { left: 30%; animation-delay: 0s; transform: rotate(45deg); }
+    .beam:nth-child(2) { left: 50%; animation-delay: 0.5s; transform: rotate(-45deg); }
+    .beam:nth-child(3) { left: 70%; animation-delay: 1s; transform: rotate(90deg); }
+    @keyframes orbit {
+      0% { transform: rotate(0deg) translateY(-100px); opacity: 0; }
+      50% { transform: rotate(180deg) translateY(0); opacity: 1; }
+      100% { transform: rotate(360deg) translateY(100px); opacity: 0; }
+    }
+    .welcome {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+    .title {
+      position: relative;
+      font-size: clamp(40px, 10vw, 90px);
+      font-weight: 900;
+      letter-spacing: 10px;
+      color: transparent;
+      text-transform: uppercase;
+      display: flex;
+    }
+    .char {
+      position: relative;
+      opacity: 0;
+      animation: explodeAndReform 3s ease-in-out forwards;
+    }
+    .particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: radial-gradient(circle, #00ffff 20%, rgba(0, 255, 255, 0) 70%);
+      border-radius: 50%;
+      box-shadow: 0 0 15px #00ffff, 0 0 30px #ffd700;
+      animation: scatter 2s ease-in-out forwards;
+    }
+    .lightning {
+      position: absolute;
+      width: 2px;
+      height: 50px;
+      background: linear-gradient(to bottom, #ffffff, #00ffff);
+      animation: flash 0.2s infinite alternate;
+    }
+    @keyframes flash {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    @keyframes explodeAndReform {
+      0% { opacity: 0; transform: scale(0); }
+      30% { opacity: 1; transform: scale(1.5); }
+      60% { opacity: 0.5; transform: scale(0.8); }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        color: #fff;
+        text-shadow: 0 0 20px #00ffff, 0 0 40px #ffd700, 0 0 80px #ffffff, 0 0 120px rgba(0, 255, 255, 0.5);
+      }
+    }
+    @keyframes scatter {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      50% { transform: translate(calc(-50vw * var(--x)), calc(-50vh * var(--y))) scale(1.5); opacity: 0.8; }
+      100% { transform: translate(0, 0) scale(0); opacity: 0; }
+    }
+    .char:nth-child(1) { animation-delay: 0s; }
+    .char:nth-child(2) { animation-delay: 0.2s; }
+    .char:nth-child(3) { animation-delay: 0.4s; }
+    .char:nth-child(4) { animation-delay: 0.6s; }
+    .char:nth-child(5) { animation-delay: 0.8s; }
+    .welcome {
+      animation: fadeOut 0.5s ease-in-out 3s forwards;
+    }
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; visibility: hidden; }
+    }
+    #navigation {
+      position: relative;
+      text-align: center;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.7);
+      min-height: 100vh;
+      color: white;
+      z-index: 2;
+    }
+    #navigation h1 {
+      font-size: clamp(1.5em, 5vw, 2.5em);
+      margin-bottom: 20px;
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      padding: 0 10px;
+    }
+    .service-button {
+      padding: 15px 30px;
+      background-color: #00b7ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: clamp(1em, 3vw, 1.2em);
+      transition: background-color 0.3s;
+      cursor: pointer;
+    }
+    .service-button:hover {
+      background-color: #008cba;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ff4500;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+      padding: 10px;
+    }
+    @media (max-width: 600px) {
+      .button-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .service-button {
+        width: 80%;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="energy-field">
+    <div class="beam"></div>
+    <div class="beam"></div>
+    <div class="beam"></div>
+  </div>
+  <div class="welcome" id="welcome">
+    <div class="title">
+      <span class="char">胡</span>
+      <span class="char">广</span>
+      <span class="char">生</span>
+      <span class="char">科</span>
+      <span class="char">技</span>
+    </div>
+  </div>
+  <div id="navigation">
+    <h1>胡广生服务导航</h1>
+    <div class="button-container">
+      <a href="./daifu/index.html" class="service-button">代付服务</a>
+      <a href="./giftcard.html" class="service-button">代充和礼品卡</a>
+      <a href="./maintenance.html" class="service-button">搭建维护</a>
+      <a href="./ipnodes.html" class="service-button">各国家地区IP节点</a>
+      <a href="./software.html" class="service-button">实用软件推荐</a>
+      <a href="./aitech.html" class="service-button">实用AI黑科技</a>
+      <a href="./tbd.html" class="service-button">待补充项目</a>
+      <a href="https://t.me/ket520" target="_blank" class="service-button">联系我</a>
+    </div>
+    <div class="footer">
+      胡广生只用飞机，唯一飞机@ket520，备忘网址：胡广生.com
+    </div>
+  </div>
+  
+  <!-- 添加背景音乐 -->
+  <audio id="backgroundMusic" src="/huguangsheng_intro.mp3" loop preload="auto"></audio>
+
+  <script>
+    const chars = document.querySelectorAll('.char');
+    chars.forEach((char, index) => {
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('span');
+        particle.className = 'particle';
+        particle.style.setProperty('--x', Math.random() * 2 - 1);
+        particle.style.setProperty('--y', Math.random() * 2 - 1);
+        particle.style.animationDelay = `${index * 0.2 + Math.random() * 0.5}s`;
+        char.appendChild(particle);
+      }
+      for (let i = 0; i < 3; i++) {
+        const lightning = document.createElement('span');
+        lightning.className = 'lightning';
+        lightning.style.left = `${Math.random() * 100}%`;
+        lightning.style.top = `${Math.random() * 100}%`;
+        lightning.style.animationDelay = `${index * 0.2 + Math.random()}s`;
+        char.appendChild(lightning);
+      }
+    });
+
+    const welcome = document.getElementById('welcome');
+    const navigation = document.getElementById('navigation');
+    const lastVisit = localStorage.getItem('lastVisit');
+    const now = Date.now();
+    const tenMinutes = 10 * 60 * 1000;
+
+    const shouldShowWelcome = !lastVisit || (now - parseInt(lastVisit) > tenMinutes);
+
+    navigation.style.display = 'none';
+
+    if (shouldShowWelcome) {
+      welcome.style.display = 'flex';
+      setTimeout(() => {
+        welcome.style.display = 'none';
+        navigation.style.display = 'block';
+        // 欢迎动画结束后尝试播放音乐
+        const audio = document.getElementById('backgroundMusic');
+        audio.play().catch(error => {
+          console.log('自动播放失败：', error);
+          // 如果自动播放被阻止，添加用户交互触发
+          document.body.addEventListener('click', () => {
+            audio.play();
+          }, { once: true });
+        });
+      }, 3500);
+      localStorage.setItem('lastVisit', now);
+    } else {
+      welcome.style.display = 'none';
+      navigation.style.display = 'block';
+      // 直接尝试播放音乐
+      const audio = document.getElementById('backgroundMusic');
+      audio.play().catch(error => {
+        console.log('自动播放失败：', error);
+        document.body.addEventListener('click', () => {
+          audio.play();
+        }, { once: true });
+      });
+    }
+  </script>
+</body>
+</html>
