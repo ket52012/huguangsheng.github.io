@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>胡广生代付计算器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 10px;
+            text-align: center;
+            background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+            background-size: cover;
+        }
+        #meteorCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .calculator-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .boss-list, .stats-section, .calculator {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+        }
+        .boss-list h3, .stats-section h3, .calculator h2 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: clamp(1em, 3vw, 1.5em);
+        }
+        .boss-item {
+            cursor: pointer;
+            padding: 5px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .boss-item:hover {
+            background-color: #f0f0f0;
+        }
+        .boss-item.selected {
+            background-color: #28a745;
+            color: white;
+        }
+        .stats-section p {
+            margin: 5px 0;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .like-button {
+            padding: 5px 15px;
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .like-button:hover {
+            background-color: #cc3700;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        input {
+            padding: 5px;
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 10px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            box-sizing: border-box;
+        }
+        input[readonly] {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        #remainingDeposit.positive {
+            background-color: #ccffcc;
+        }
+        #remainingDeposit.negative {
+            background-color: #ffcccc;
+        }
+        #realTimeRate, #fetchTime { 
+            font-size: clamp(0.8em, 2vw, 0.9em); 
+            color: #555; 
+            margin: 5px 0; 
+        }
+        .action-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .confirm-button, .screenshot-button {
+            padding: 10px 20px;
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            width: 48%;
+            box-sizing: border-box;
+        }
+        .confirm-button:hover, .screenshot-button:hover {
+            background-color: #cc3700;
+        }
+        .simple-calculator, .trx-converter {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+            box-sizing: border-box;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+        .simple-calculator h3, .trx-converter h3 {
+            margin: 0 0 10px 0;
+            font-size: clamp(1em, 3vw, 1.5em);
+        }
+        .simple-calculator input[type="text"], .trx-converter input[type="number"] {
+            width: 100%;
+            max-width: 280px;
+            padding: 8px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .simple-calculator input[readonly], .trx-converter input[readonly] {
+            margin-top: 10px;
+            background-color: #e9ecef;
+        }
+        .simple-calculator p, .trx-converter p {
+            font-size: clamp(0.8em, 2vw, 0.9em);
+            color: #666;
+            margin: 5px 0;
+        }
+        .trx-converter label {
+            display: block;
+            margin: 5px 0;
+            width: 100%;
+        }
+        .trx-converter input {
+            width: 100%;
+            max-width: 280px;
+        }
+        .contact-button {
+            display: block;
+            margin: 10px auto 0;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+            width: 150px;
+        }
+        .contact-button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: clamp(0.8em, 2vw, 0.9em);
+            color: #333;
+            text-align: left;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .footer p {
+            margin: 0 0 10px 0;
+        }
+        .signature {
+            margin-top: 20px;
+            font-size: clamp(1em, 3vw, 1.2em);
+            font-weight: bold;
+            color: #ff4500;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .address-section {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            z-index: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .address-section label {
+            margin: 5px 0 2px 0;
+            font-weight: bold;
+            font-size: clamp(0.9em, 2.5vw, 1em);
+        }
+        .address-section .address-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+        .address-section input {
+            width: 100%;
+            max-width: 400px;
+            margin-right: 10px;
+            font-size: clamp(0.8em, 2vw, 0.9em);
+        }
+        .copy-button {
+            padding: 5px 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: clamp(0.8em, 2vw, 0.9em);
+        }
+        .copy-button:hover {
+            background-color: #218838;
+        }
+        @media (max-width: 900px) {
+            .calculator-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .boss-list, .stats-section, .calculator, .simple-calculator, .trx-converter {
+                max-width: 100%;
+                margin: 10px 0;
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .confirm-button, .screenshot-button {
+                width: 100%;
+            }
+            .address-section input {
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 流星雨 Canvas -->
+    <canvas id="meteorCanvas"></canvas>
+
+    <div class="calculator-container">
+        <!-- 老板余额列表 -->
+        <div class="boss-list" id="bossList">
+            <h3>老板余额</h3>
+            <!-- 动态填充 -->
+        </div>
+
+        <!-- 代付计算器 -->
+        <div class="calculator" id="calculator">
+            <h2>胡广生代付计算器</h2>
+            <p>实时 USD/CNY 汇率: <span id="realTimeRate">加载中...</span></p>
+            <p>汇率获取时间为北京时间: <span id="fetchTime">加载中...</span></p>
+
+            <label for="cnyAmount">代付金额 (人民币 CNY):</label>
+            <input type="number" id="cnyAmount" placeholder="请输入人民币金额" min="0" step="0.01">
+
+            <label for="exchangeRate">代付汇率 (USD/CNY, 实时汇率 - 0.5):</label>
+            <input type="number" id="exchangeRate" placeholder="自动计算" step="0.01" readonly>
+
+            <label for="lossPercentage">点位 (%):</label>
+            <input type="number" id="lossPercentage" placeholder="自动计算" step="0.01" readonly>
+
+            <label for="usdReceived">应回款 (USDT):</label>
+            <input type="number" id="usdReceived" placeholder="自动计算" step="0.1" readonly>
+
+            <label for="bossDeposit">老板预存 (USDT):</label>
+            <input type="text" id="bossDeposit" placeholder="请选择老板或手动输入" step="0.01">
+
+            <label for="remainingDeposit">剩余预存 (USDT):</label>
+            <input type="number" id="remainingDeposit" placeholder="自动计算" step="0.01" readonly>
+
+            <div class="action-buttons">
+                <button class="confirm-button" onclick="confirmPayment()">确认代付</button>
+                <button class="screenshot-button" onclick="captureScreenshot()">截图</button>
+            </div>
+        </div>
+
+        <!-- 统计信息和普通计算器 -->
+        <div class="stats-section" id="statsSection">
+            <h3>统计信息</h3>
+            <p>总共代付次数: <span id="totalPayments">0</span></p>
+            <p>点赞数: <span id="likeCount">0</span></p>
+            <button class="like-button" onclick="incrementLike()">点赞</button>
+
+            <!-- 普通计算器 -->
+            <div class="simple-calculator">
+                <h3>普通计算器</h3>
+                <input type="text" id="calcInput" placeholder="输入算式">
+                <p>结果会自动显示在下方</p>
+                <input type="text" id="calcResult" placeholder="结果" readonly>
+            </div>
+
+            <!-- TRX 兑换汇率显示器 -->
+            <div class="trx-converter">
+                <h3>TRX 兑换</h3>
+                <a href="https://t.me/ket520" class="contact-button">联系胡广生</a>
+                <label>USDT:</label>
+                <input type="number" id="usdtInput" placeholder="输入 USDT" min="0" step="0.01">
+                <label>TRX:</label>
+                <input type="number" id="trxInput" placeholder="输入 TRX" min="0" step="0.01">
+            </div>
+        </div>
+    </div>
+
+    <div class="footer" id="announcement">
+        <p>欢迎使用胡广生代付，更高效  更专业  代付点位为实时汇率-0.5，点位并不是固定点位，这个计算器会让你更直观的明白您需要支付的点位。（友情提示：不看征信，不谈感情，只接预付，挂账的免开尊口）</p>
+    </div>
+
+    <div class="address-section">
+        <label>TRC-20地址:</label>
+        <div class="address-row">
+            <input type="text" value="TLddkZqP5Htbu2FHttGKbyLHeF5QXt9qG4" readonly>
+            <button class="copy-button" onclick="copyToClipboard('TLddkZqP5Htbu2FHttGKbyLHeF5QXt9qG4')">复制</button>
+        </div>
+
+        <label>ERC-20地址:</label>
+        <div class="address-row">
+            <input type="text" value="0xeb18a7ad1c28b2d66476a48c3a3fbd662c1458d4" readonly>
+            <button class="copy-button" onclick="copyToClipboard('0xeb18a7ad1c28b2d66476a48c3a3fbd662c1458d4')">复制</button>
+        </div>
+
+        <label>BSC(BEP-20)地址:</label>
+        <div class="address-row">
+            <input type="text" value="0xeb18a7ad1c28b2d66476a48c3a3fbd662c1458d4" readonly>
+            <button class="copy-button" onclick="copyToClipboard('0xeb18a7ad1c28b2d66476a48c3a3fbd662c1458d4')">复制</button>
+        </div>
+    </div>
+
+    <div class="signature">
+        认准胡广生，唯一飞机@ket520  备忘网站：胡广生.com
+    </div>
+
+    <script>
+        let frontendPassword = '123'; // 默认前端密码
+
+        // 流星雨效果
+        const canvas = document.getElementById('meteorCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const meteors = [];
+
+        function createMeteor() {
+            const x = Math.random() * canvas.width;
+            const y = -10;
+            const length = Math.random() * 30 + 20;
+            const speed = Math.random() * 5 + 3;
+            meteors.push({ x, y, length, speed, alpha: 1 });
+        }
+
+        function animateMeteors() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (Math.random() < 0.1) createMeteor();
+            meteors.forEach((meteor, index) => {
+                const gradient = ctx.createLinearGradient(
+                    meteor.x, meteor.y,
+                    meteor.x - meteor.length, meteor.y + meteor.length
+                );
+                gradient.addColorStop(0, `rgba(0, 255, 0, ${meteor.alpha})`);
+                gradient.addColorStop(1, `rgba(0, 255, 0, 0)`);
+
+                ctx.beginPath();
+                ctx.moveTo(meteor.x, meteor.y);
+                ctx.lineTo(meteor.x - meteor.length, meteor.y + meteor.length);
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ff00';
+                ctx.stroke();
+
+                meteor.y += meteor.speed;
+                meteor.x -= meteor.speed / 2;
+                meteor.alpha -= 0.02;
+
+                if (meteor.y > canvas.height || meteor.x < 0 || meteor.alpha <= 0) {
+                    meteors.splice(index, 1);
+                }
+            });
+            requestAnimationFrame(animateMeteors);
+        }
+        animateMeteors();
+
+        // 计算器逻辑
+        const cnyAmount = document.getElementById('cnyAmount');
+        const bossDeposit = document.getElementById('bossDeposit');
+        const exchangeRate = document.getElementById('exchangeRate');
+        const usdReceived = document.getElementById('usdReceived');
+        const realTimeRateDisplay = document.getElementById('realTimeRate');
+        const lossPercentageDisplay = document.getElementById('lossPercentage');
+        const fetchTimeDisplay = document.getElementById('fetchTime');
+        const remainingDeposit = document.getElementById('remainingDeposit');
+        const bossList = document.getElementById('bossList');
+        const totalPayments = document.getElementById('totalPayments');
+        const likeCount = document.getElementById('likeCount');
+        const calcInput = document.getElementById('calcInput');
+        const calcResult = document.getElementById('calcResult');
+        const usdtInput = document.getElementById('usdtInput');
+        const trxInput = document.getElementById('trxInput');
+
+        let realRate = 7.22; // 默认 USD/CNY 汇率
+        let selectedBoss = null;
+        let trxRate = 0; // TRX/USDT 实时汇率
+
+        // 初始化数据
+        fetch('./stats.php?action=get')
+            .then(response => response.json())
+            .then(data => {
+                totalPayments.textContent = data.visits;
+                likeCount.textContent = data.likes;
+                fetchBossData();
+            })
+            .catch(error => {
+                console.error('获取统计数据失败:', error);
+                totalPayments.textContent = 0;
+                likeCount.textContent = 0;
+            });
+
+        function fetchBossData() {
+            fetch('./boss_data.php?action=get')
+                .then(response => response.json())
+                .then(data => {
+                    bossList.innerHTML = '<h3>老板余额</h3>';
+                    data.bosses.forEach(boss => {
+                        const div = document.createElement('div');
+                        div.className = 'boss-item';
+                        div.textContent = `${boss.name}【${Number(boss.amount).toFixed(1)}】USDT`;
+                        div.dataset.amount = boss.amount;
+                        div.dataset.id = boss.id;
+                        div.dataset.name = boss.name;
+                        div.onclick = () => selectBoss(div);
+                        bossList.appendChild(div);
+                    });
+                    if (selectedBoss) {
+                        const updatedBoss = data.bosses.find(b => b.id === parseInt(selectedBoss.dataset.id));
+                        if (updatedBoss) {
+                            selectedBoss.dataset.amount = updatedBoss.amount;
+                            selectedBoss.textContent = `${updatedBoss.name}【${Number(updatedBoss.amount).toFixed(1)}】USDT`;
+                            bossDeposit.value = `${updatedBoss.name}: ${Number(updatedBoss.amount).toFixed(1)}`;
+                            calculate();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('获取老板数据失败:', error);
+                    bossList.innerHTML += '<p>加载失败</p>';
+                });
+        }
+
+        function getBeijingTime() {
+            const now = new Date();
+            const beijingOffset = 8 * 60;
+            const localOffset = now.getTimezoneOffset();
+            const beijingTime = new Date(now.getTime() + (beijingOffset + localOffset) * 60 * 1000);
+            return beijingTime.toLocaleString('zh-CN', { 
+                timeZone: 'Asia/Shanghai', 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        function fetchExchangeRate() {
+            fetch('./get_usd_cny_api.php')
+                .then(response => response.json())
+                .then(data => {
+                    const apiUrl = data.apiUrl || 'https://v6.exchangerate-api.com/v6/YOUR_API_KEY/latest/USD';
+                    const defaultRate = parseFloat(data.defaultRate) || 7.22;
+                    return fetch(apiUrl)
+                        .then(response => response.json())
+                        .then(apiData => {
+                            realRate = apiData.conversion_rates ? apiData.conversion_rates.CNY : defaultRate;
+                            realTimeRateDisplay.textContent = realRate.toFixed(2);
+                            const adjustedRate = realRate - 0.5;
+                            exchangeRate.value = adjustedRate.toFixed(2);
+                            fetchTimeDisplay.textContent = getBeijingTime();
+                            calculate();
+                        })
+                        .catch(error => {
+                            console.error('获取 USD/CNY 汇率失败:', error);
+                            realRate = defaultRate;
+                            realTimeRateDisplay.textContent = realRate.toFixed(2);
+                            const adjustedRate = realRate - 0.5;
+                            exchangeRate.value = adjustedRate.toFixed(2);
+                            fetchTimeDisplay.textContent = 'API未连接，使用默认汇率';
+                            calculate();
+                        });
+                });
+        }
+
+        function calculate() {
+            const cny = parseFloat(cnyAmount.value) || 0;
+            const depositStr = bossDeposit.value.split(':')[1]?.trim() || '0';
+            const deposit = parseFloat(depositStr) || 0;
+            const rate = parseFloat(exchangeRate.value) || 0;
+
+            if (cny < 0) {
+                cnyAmount.value = 0;
+                return;
+            }
+
+            const usdReceivedValue = rate ? (cny / rate) : 0;
+            const roundedUsdReceived = Number(usdReceivedValue.toFixed(2));
+            usdReceived.value = roundedUsdReceived;
+
+            const originalUsd = realRate ? (cny / realRate) : 0;
+            const lossPercentage = originalUsd && usdReceivedValue 
+                ? ((originalUsd - usdReceivedValue) / originalUsd * 100) 
+                : 0;
+            lossPercentageDisplay.value = Math.abs(lossPercentage).toFixed(2);
+
+            const remainingValue = deposit - roundedUsdReceived;
+            remainingDeposit.value = remainingValue.toFixed(1);
+            remainingDeposit.classList.remove('positive', 'negative');
+            if (remainingValue > 0) {
+                remainingDeposit.classList.add('positive');
+            } else if (remainingValue < 0) {
+                remainingDeposit.classList.add('negative');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('地址已复制到剪贴板！');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制！');
+            });
+        }
+
+        function captureScreenshot() {
+            html2canvas(document.getElementById('calculator')).then(canvas => {
+                canvas.toBlob(blob => {
+                    const item = new ClipboardItem({ 'image/png': blob });
+                    navigator.clipboard.write([item]).then(() => {
+                        alert('截图已复制到剪贴板，可使用 Ctrl+V 粘贴！');
+                    }).catch(err => {
+                        console.error('复制到剪贴板失败:', err);
+                        alert('复制失败，请尝试手动截图！');
+                    });
+                });
+            });
+        }
+
+        function selectBoss(element) {
+            if (selectedBoss) selectedBoss.classList.remove('selected');
+            selectedBoss = element;
+            selectedBoss.classList.add('selected');
+            const bossName = element.dataset.name;
+            const bossAmount = Number(element.dataset.amount).toFixed(1);
+            bossDeposit.value = `${bossName}: ${bossAmount}`;
+            calculate();
+        }
+
+        function incrementLike() {
+            fetch('./stats.php?action=like', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    likeCount.textContent = data.likes;
+                })
+                .catch(error => {
+                    console.error('点赞失败:', error);
+                    alert('点赞失败，请重试！');
+                });
+        }
+
+        function fetchFrontendPassword() {
+            fetch('./get_frontend_password.php')
+                .then(response => response.json())
+                .then(data => {
+                    frontendPassword = data.password || '123';
+                })
+                .catch(error => {
+                    console.error('获取前端密码失败:', error);
+                    frontendPassword = '123';
+                });
+        }
+
+        function confirmPayment() {
+            if (!selectedBoss) {
+                alert('请先选择一个老板！');
+                return;
+            }
+            const password = prompt('请输入管理员密码以提交代付请求：');
+            if (password === frontendPassword) {
+                const depositStr = bossDeposit.value.split(':')[1]?.trim() || '0';
+                const deposit = parseFloat(depositStr) || 0;
+                const received = parseFloat(usdReceived.value) || 0;
+                if (deposit >= received && received > 0) {
+                    fetch('./boss_data.php?action=confirm', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `boss_id=${selectedBoss.dataset.id}&amount=${received}&password=BACKEND_PASSWORD`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            const newAmount = (deposit - received).toFixed(1);
+                            selectedBoss.dataset.amount = newAmount;
+                            selectedBoss.textContent = `${selectedBoss.dataset.name}【${newAmount}】USDT`;
+                            bossDeposit.value = `${selectedBoss.dataset.name}: ${newAmount}`;
+                            calculate();
+                            fetchBossData();
+                            fetchStats();
+                        } else {
+                            alert('提交失败：' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('确认代付失败:', error);
+                        alert('确认失败，请检查网络！');
+                    });
+                } else {
+                    alert('余额不足或应回款无效！');
+                }
+            } else {
+                alert('前端密码错误！');
+            }
+        }
+
+        function fetchStats() {
+            fetch('./stats.php?action=get')
+                .then(response => response.json())
+                .then(data => {
+                    totalPayments.textContent = data.visits;
+                    likeCount.textContent = data.likes;
+                })
+                .catch(error => {
+                    console.error('获取统计数据失败:', error);
+                });
+        }
+
+        // 普通计算器逻辑
+        function calculateExpression() {
+            const expression = calcInput.value.trim();
+            try {
+                const safeExpression = expression.match(/^[\d+\-*/.()]+$/);
+                if (!safeExpression) throw new Error('无效输入');
+                const result = eval(expression);
+                calcResult.value = Number.isFinite(result) ? result.toFixed(2) : '错误';
+            } catch (error) {
+                calcResult.value = '错误';
+                console.error('计算错误:', error);
+            }
+        }
+
+        // TRX 兑换逻辑
+        function fetchTrxRate() {
+            fetch('./get_trx_api.php')
+                .then(response => response.json())
+                .then(data => {
+                    const apiUrl = data.apiUrl || 'https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd';
+                    return fetch(apiUrl);
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const usdToTrx = data.tron.usd ? (1 / data.tron.usd) : 4;
+                    trxRate = usdToTrx;
+                    const adjustedTrxRate = trxRate - 0.3;
+                    calculateTrxFromUsdt();
+                })
+                .catch(error => {
+                    console.error('获取 TRX 汇率失败:', error);
+                    trxRate = 4;
+                    const adjustedTrxRate = trxRate - 0.3;
+                    calculateTrxFromUsdt();
+                });
+        }
+
+        function calculateTrxFromUsdt() {
+            const usdt = parseFloat(usdtInput.value) || 0;
+            if (usdt < 0) usdtInput.value = 0;
+            const adjustedTrxRate = trxRate - 0.3;
+            const trx = usdt * adjustedTrxRate;
+            trxInput.value = trx.toFixed(2);
+        }
+
+        function calculateUsdtFromTrx() {
+            const trx = parseFloat(trxInput.value) || 0;
+            if (trx < 0) trxInput.value = 0;
+            const adjustedTrxRate = trxRate - 0.3;
+            const usdt = trx / adjustedTrxRate;
+            usdtInput.value = usdt.toFixed(2);
+        }
+
+        // 获取公告内容
+        function fetchAnnouncement() {
+            fetch('./get_announcement.php')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('announcement').querySelector('p').textContent = data.content || '欢迎使用胡广生代付，更高效 更专业 代付点位为实时汇率-0.5，点位并不是固定点位，这个计算器会让你更直观的明白您需要支付的点位。（友情提示：不看征信，不谈感情，只接预付，挂账的免开尊口）';
+                })
+                .catch(error => {
+                    console.error('获取公告失败:', error);
+                    document.getElementById('announcement').querySelector('p').textContent = '欢迎使用胡广生代付，更高效 更专业 代付点位为实时汇率-0.5，点位并不是固定点位，这个计算器会让你更直观的明白您需要支付的点位。（友情提示：不看征信，不谈感情，只接预付，挂账的免开尊口）';
+                });
+        }
+
+        usdtInput.addEventListener('input', calculateTrxFromUsdt);
+        trxInput.addEventListener('input', calculateUsdtFromTrx);
+
+        calcInput.addEventListener('input', () => {
+            calculateExpression();
+        });
+
+        cnyAmount.addEventListener('input', () => {
+            if (cnyAmount.value < 0) cnyAmount.value = 0;
+            calculate();
+        });
+
+        fetchExchangeRate();
+        cnyAmount.addEventListener('input', calculate);
+        bossDeposit.addEventListener('input', calculate);
+        setInterval(fetchExchangeRate, 60000);
+        setInterval(fetchBossData, 5000);
+        setInterval(fetchStats, 5000);
+        fetchTrxRate();
+        setInterval(fetchTrxRate, 60000);
+        fetchAnnouncement();
+        fetchFrontendPassword();
+    </script>
+</body>
+</html>

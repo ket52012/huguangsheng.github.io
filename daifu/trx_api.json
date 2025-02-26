@@ -1,0 +1,3 @@
+{
+    "apiUrl": "https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd"
+}

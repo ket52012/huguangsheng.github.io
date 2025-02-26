@@ -1,0 +1,37 @@
+[
+    {
+        "id": 1,
+        "name": "\u6668\u603b",
+        "amount": 692.5
+    },
+    {
+        "id": 2,
+        "name": "\u5927\u732b",
+        "amount": 95
+    },
+    {
+        "id": 3,
+        "name": "\u8d8a\u5357\u8bdd\u8d39\u7fa4",
+        "amount": 70.7
+    },
+    {
+        "id": 5,
+        "name": "\u5929\u9053\u916c\u52e4",
+        "amount": 145
+    },
+    {
+        "id": 6,
+        "name": "\u68ee\u603b",
+        "amount": 0
+    },
+    {
+        "id": 7,
+        "name": "\u745e\u8001\u677f",
+        "amount": 305.1
+    },
+    {
+        "id": 8,
+        "name": "\u84dd\u732b\u732b\u54e5",
+        "amount": 842.4
+    }
+]
